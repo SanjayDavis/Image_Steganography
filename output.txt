@@ -1,0 +1,2 @@
+this is a text that i want to embed in the image.
+if i add new text will it work
