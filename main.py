@@ -42,25 +42,28 @@ def extract_data_from_image():
     image = cv.imread(image_path)
     if image is None:
         raise ValueError("Image not found")
-
+    
     binary_data = ""
+    extracted_text = ""
+
     for row in image:
         for pixel in row:
             for channel in range(3):
-                binary_data += str(pixel[channel] & 1)  
+                binary_data += str(pixel[channel] & 1)
 
-    all_bytes = [binary_data[i:i+8] for i in range(0, len(binary_data), 8)]
-    decoded_text = "".join([chr(int(byte, 2)) for byte in all_bytes])
+                if len(binary_data) == 8:
+                    char = chr(int(binary_data, 2))
+                    extracted_text += char
+                    binary_data = "" 
 
-    # Find end marker
-    end_index = decoded_text.find(end_string)
-    if end_index == -1:
-        print("The text is corrupt..")
-    else:
-        hidden_message = decoded_text[:end_index]
-        with open("output.txt", "w") as file:
-            file.write(hidden_message)
-        print("Data extracted successfully")
+                    if extracted_text.endswith(end_string):
+                        with open('output.txt', 'w') as file:
+                            file.write(extracted_text[:-len(end_string)])
+                        print("Data extracted successfully")
+                        return
+    
+    print("No END marker found, data may be corrupted.")
+
 
 
 def get_metadata():
