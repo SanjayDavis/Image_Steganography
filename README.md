@@ -18,3 +18,4 @@ This project hides files inside an image using Least Significant Bit (LSB) stega
 
 ### Hide a file inside an image
 ```bash
+python encode.py
