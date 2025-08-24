@@ -1,23 +1,38 @@
 import cv2 as cv
-
-
-end_string = "###END###"
+import json
+import os
+import base64
 
 def embed_data_in_image():
-    image_path = input('Enter the image path:')
-    input_file = input('Enter the input file path:')
+    image_path = input('Enter the image path: ')
+    input_file = input('Enter the input file path: ')
+    
+    # get file details
+    file_details = {
+        'name': os.path.basename(input_file),
+        'size': os.path.getsize(input_file)
+    }
+    print(file_details)
+
     image = cv.imread(image_path)
     if image is None:
         raise ValueError("Image not found")
     
-    with open(input_file, 'r') as file:
-        data = file.read()
-    data += end_string
+    # read file as bytes (supports any type)
+    with open(input_file, 'rb') as file:
+        file_data = file.read()
+    
+    # encode file content as base64 to keep JSON safe
+    file_data_b64 = base64.b64encode(file_data).decode('utf-8')
 
-    #get binary data
-    binary_data = ''.join(format(ord(char),'08b') for char in data)
-    binary_data += ''
+    container = {
+        "content": file_data_b64,
+        "metadata": file_details
+    }
+    data = json.dumps(container)
 
+    # convert to binary
+    binary_data = ''.join(format(ord(char), '08b') for char in data)
 
     data_index = 0
     for row in image:
@@ -35,10 +50,10 @@ def embed_data_in_image():
 
     cv.imwrite('output.png', image)
     print('Data embedded successfully')
-    
+
 
 def extract_data_from_image():
-    image_path = input('Enter the image path:')
+    image_path = input('Enter the image path: ')
     image = cv.imread(image_path)
     if image is None:
         raise ValueError("Image not found")
@@ -54,31 +69,41 @@ def extract_data_from_image():
                 if len(binary_data) == 8:
                     char = chr(int(binary_data, 2))
                     extracted_text += char
-                    binary_data = "" 
+                    binary_data = ""
 
-                    if extracted_text.endswith(end_string):
-                        with open('output.txt', 'w') as file:
-                            file.write(extracted_text[:-len(end_string)])
-                        print("Data extracted successfully")
-                        return
+                    # Try JSON parse as soon as it looks valid
+                    if extracted_text.strip().startswith("{") and extracted_text.strip().endswith("}"):
+                        try:
+                            container = json.loads(extracted_text)
+                            file_data_b64 = container["content"]
+                            metadata = container["metadata"]
+
+                            file_data = base64.b64decode(file_data_b64)
+
+                            with open(metadata["name"], "wb") as file:
+                                file.write(file_data)
+
+                            print("Data extracted successfully")
+                            print("Metadata:", metadata)
+                            return
+                        except Exception:
+                            pass
     
-    print("No END marker found, data may be corrupted.")
-
+    print("No valid JSON found, data may be corrupted.")
 
 
 def get_metadata():
-    image_path = input('Enter the image path:')
+    image_path = input('Enter the image path: ')
     image = cv.imread(image_path)
     if image is None:
         raise ValueError("Image not found")
     
-    print(image)
-    print(image.shape)
-    print(image.size)
-    print(image.dtype)
-    print(image.itemsize)
-    print(image.nbytes)
-    print(image.ndim)
+    print("Image Shape:", image.shape)
+    print("Total Pixels:", image.size)
+    print("Data Type:", image.dtype)
+    print("Bytes per Item:", image.itemsize)
+    print("Total Bytes:", image.nbytes)
+    print("Dimensions:", image.ndim)
 
 
 def main():
@@ -96,7 +121,6 @@ def main():
     else:
         print('Invalid choice')
         return
-
 
 
 if __name__ == "__main__":
