@@ -2,6 +2,7 @@ import cv2 as cv
 import json
 import os
 import base64
+import sys
 
 def embed_data_in_image():
     image_path = input('Enter the image path: ')
@@ -12,17 +13,17 @@ def embed_data_in_image():
         'name': os.path.basename(input_file),
         'size': os.path.getsize(input_file)
     }
-    print(file_details)
+    print("File Details:", file_details)
 
     image = cv.imread(image_path)
     if image is None:
         raise ValueError("Image not found")
     
-    # read file as bytes (supports any type)
+    # read file as bytes
     with open(input_file, 'rb') as file:
         file_data = file.read()
     
-    # encode file content as base64 to keep JSON safe
+    # encode file content as base64
     file_data_b64 = base64.b64encode(file_data).decode('utf-8')
 
     container = {
@@ -31,8 +32,16 @@ def embed_data_in_image():
     }
     data = json.dumps(container)
 
-    # convert to binary
     binary_data = ''.join(format(ord(char), '08b') for char in data)
+    image_capacity_bits = image.size  
+    print(f"Image capacity (bits): {image_capacity_bits}")
+    print(f"Data size (bits): {len(binary_data)}")
+
+    if len(binary_data) > image_capacity_bits:
+        print("Error: Data too large to fit in image!")
+        sys.exit(1)
+    else:
+        print("Data fits in image")
 
     data_index = 0
     for row in image:
@@ -49,7 +58,7 @@ def embed_data_in_image():
                     break
 
     cv.imwrite('output.png', image)
-    print('Data embedded successfully')
+    print('Data embedded successfully into output.png')
 
 
 def extract_data_from_image():
@@ -71,7 +80,7 @@ def extract_data_from_image():
                     extracted_text += char
                     binary_data = ""
 
-                    # Try JSON parse as soon as it looks valid
+                    # Try JSON parse
                     if extracted_text.strip().startswith("{") and extracted_text.strip().endswith("}"):
                         try:
                             container = json.loads(extracted_text)
@@ -88,8 +97,8 @@ def extract_data_from_image():
                             return
                         except Exception:
                             pass
-    
-    print("No valid JSON found, data may be corrupted.")
+
+    print(" No valid JSON found, data may be corrupted.")
 
 
 def get_metadata():
@@ -98,12 +107,10 @@ def get_metadata():
     if image is None:
         raise ValueError("Image not found")
     
-    print("Image Shape:", image.shape)
-    print("Total Pixels:", image.size)
-    print("Data Type:", image.dtype)
-    print("Bytes per Item:", image.itemsize)
+    print("Image Shape (H,W,C):", image.shape)
+    print("Total Pixels:", image.shape[0] * image.shape[1])
+    print("Total Bits Available:", image.size)
     print("Total Bytes:", image.nbytes)
-    print("Dimensions:", image.ndim)
 
 
 def main():
@@ -120,7 +127,6 @@ def main():
         get_metadata()
     else:
         print('Invalid choice')
-        return
 
 
 if __name__ == "__main__":
