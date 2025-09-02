@@ -9,7 +9,6 @@ This project hides files inside an image using Least Significant Bit (LSB) stega
 - Minimal visual change in the image.
 
 ## Usage
+- For 1920x1080 Max File size that can be embed is 758KB
+- For multi-file use compression software
 
-### Hide a file inside an image
-```bash
-python encode.py
