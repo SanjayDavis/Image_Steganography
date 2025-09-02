@@ -5,7 +5,8 @@ This project hides files inside an image using Least Significant Bit (LSB) stega
 ## Features
 - Hide any file inside a PNG image.
 - Extract the file back with its original name.
-- Works with any file type (data is stored in Base64).
+- Works with any file type.
+- File is encrypted with symmetric Encryption tool.
 - Minimal visual change in the image.
 
 ## Usage
