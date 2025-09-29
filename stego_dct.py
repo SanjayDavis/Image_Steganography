@@ -22,8 +22,7 @@ def embed_data(image_path: str, input_file_path: str) -> str:
 	print("Do you want encryption ?")
 	print("1. Yes ( More space is taken , file should be small )")
 	print("2. No  ( A Medium sized file upto 10kb can be stored )")
-	choice = int(input(print("Enter a choice :")))
-
+	choice = int(input("Enter a choice :"))
 	container = {} 
 
 	if choice == 1:
@@ -44,7 +43,7 @@ def embed_data(image_path: str, input_file_path: str) -> str:
 			"metadata": file_details,
 		}  
 
-	data = json.dumps(container)s
+	data = json.dumps(container)
 	data_bytes = np.frombuffer(data.encode('utf-8'), dtype=np.uint8)
 	binary_data = np.unpackbits(data_bytes)
     
