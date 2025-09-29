@@ -48,30 +48,7 @@ def embed_data(image_path: str, input_file_path: str) -> str:
 	data_bytes = np.frombuffer(data.encode('utf-8'), dtype=np.uint8)
 	binary_data = np.unpackbits(data_bytes)
     
-#     image_capacity_bits = image.size  
-#     print(f"Image capacity (bits): {image_capacity_bits}")
-#     print(f"Data size (bits): {len(binary_data)}")
 
-#     if len(binary_data) > image_capacity_bits:
-#         print("Error: Data too large to fit in image!")
-#         sys.exit(1)
-#     else:
-#         print("Data fits in image")
-
-#     flat_image = image.flatten()
-    
-#     modified_image = flat_image.copy()
-    
-#     modified_image[:len(binary_data)] = (modified_image[:len(binary_data)] & 0b11111110)
-    
-#     modified_image[:len(binary_data)] |= binary_data.astype(np.uint8)
-    
-#     result_image = modified_image.reshape(image.shape)
-
-#     os.makedirs('images', exist_ok=True)
-#     output_path = os.path.join('images', 'output.png')
-#     cv.imwrite(output_path, result_image)
-#     print(f'Data embedded successfully into {output_path}')
 
 
 def extract_data(image_path: str, key: str) -> None:
