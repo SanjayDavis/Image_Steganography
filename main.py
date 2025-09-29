@@ -5,6 +5,8 @@ import os
 from cryptography.fernet import Fernet
 import sys
 
+import stego_dct
+
 def embed_data_in_image():
     image_path = input('Enter the image path: ')
     input_file = input('Enter the input file path: ')
@@ -56,8 +58,10 @@ def embed_data_in_image():
     
     result_image = modified_image.reshape(image.shape)
 
-    cv.imwrite('output.png', result_image)
-    print('Data embedded successfully into output.png')
+    os.makedirs('images', exist_ok=True)
+    output_path = os.path.join('images', 'output.png')
+    cv.imwrite(output_path, result_image)
+    print(f'Data embedded successfully into {output_path}')
 
 
 def extract_data_from_image():
@@ -144,27 +148,26 @@ def extract_data_from_image_simple():
     flat_image = image.flatten()
     lsbs = flat_image & 1
     
-    # Take first 100KB worth of bits to look for JSON
-    max_bits = min(len(lsbs), 100000 * 8)  # 100KB max
+    # Taking first 100KB worth of bits to look for json
+    max_bits = min(len(lsbs), 100000 * 8)
     relevant_bits = lsbs[:max_bits]
     
-    # Reshape to bytes (pad if necessary)
+    # padding upto 8-bits
     remainder = len(relevant_bits) % 8
     if remainder != 0:
         relevant_bits = np.pad(relevant_bits, (0, 8 - remainder), 'constant')
     
-    # Convert to bytes using numpy vectorization
+    # convert to bytes using numpy 
     bit_chunks = relevant_bits.reshape(-1, 8)
     powers = np.array([128, 64, 32, 16, 8, 4, 2, 1])
     byte_values = np.sum(bit_chunks * powers, axis=1)
     
-    # Convert to string, handling potential invalid characters
+    # convert to string, handling potential invalid characters
     try:
-        # Filter out non-printable characters for JSON detection
-        valid_bytes = byte_values[byte_values < 128]  # ASCII only
+        valid_bytes = byte_values[byte_values < 128]  # ASCII only to remove unwanted charecters (it is already hashed .. so i dont know)
         text = ''.join(chr(b) for b in valid_bytes)
         
-        # Find complete JSON object
+        # get complete JSON object
         if '{' in text and '}' in text:
             start_idx = text.find('{')
             brace_count = 0
@@ -208,7 +211,7 @@ def get_metadata():
     print("Total Bytes:", image.nbytes)
     
     # Additional capacity info
-    max_data_bits = image.size  # 1 bit per pixel channel
+    max_data_bits = image.size
     max_data_bytes = max_data_bits // 8
     print(f"Maximum embeddable data: {max_data_bytes} bytes ({max_data_bytes / 1024:.2f} KB)")
 
@@ -219,6 +222,8 @@ def main():
     print('2. Extract data from image (chunk method)')
     print('3. Extract data from image (simple method)')
     print('4. Get Metadata')
+    print('5. DCT Embed data (placeholder)')
+    print('6. DCT Extract data (placeholder)')
     choice = int(input())
     if choice == 1:
         embed_data_in_image()
@@ -228,6 +233,20 @@ def main():
         extract_data_from_image_simple()
     elif choice == 4:
         get_metadata()
+    elif choice == 5:
+        image_path = input('Enter the image path: ')
+        input_file = input('Enter the input file path: ')
+        try:
+            stego_dct.embed_data(image_path, input_file)
+        except NotImplementedError as e:
+            print(e)
+    elif choice == 6:
+        image_path = input('Enter the image path: ')
+        user_key = input('Enter the key to decrypt: ')
+        try:
+            stego_dct.extract_data(image_path, user_key)
+        except NotImplementedError as e:
+            print(e)
     else:
         print('Invalid choice')
 
