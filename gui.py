@@ -1,4 +1,4 @@
-"""Image Steganography GUI  dark-themed, customtkinter."""
+﻿"""Image Steganography GUI  dark-themed, customtkinter."""
 
 import os
 import sys
