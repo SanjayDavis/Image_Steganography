@@ -41,6 +41,11 @@ coverage.xml
 htmlcov/
 .pytest_cache/
 .tox/
+images/
+extracted/
+sample.jpeg
+test.txt
+
 
 # Type checker caches
 .mypy_cache/
@@ -64,5 +69,3 @@ Thumbs.db
 # Project-specific generated outputs
 final/
 output.png
-
-
